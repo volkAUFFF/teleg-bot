@@ -80,7 +80,7 @@ async def start_cmd(message: types.Message):
     else:
 
         await message.answer(
-        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"!</b>\n<i>Ставь легко, выигрывай быстро, твой шанс сорвать куш уже здесь!</i>',
+        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"\n\n<pre>Ставь легко, выигрывай быстро, твой шанс сорвать куш уже здесь!</pre></b>',
         reply_markup=kb.as_markup(),
         disable_web_page_preview=True,
         parse_mode='html'
