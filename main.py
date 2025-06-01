@@ -44,7 +44,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 # Получаем данные из переменных окружения
 BOT_TOKEN = os.getenv("7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas")
-WEBHOOK_DOMAIN = os.getenv("teleg-bot-btb1.onrender.com")  # Пример: https://your-app.onrender.com
+WEBHOOK_DOMAIN = os.getenv("https://teleg-bot-btb1.onrender.com")  # Пример: https://your-app.onrender.com
 WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
 WEBHOOK_URL = f"{WEBHOOK_DOMAIN}{WEBHOOK_PATH}"
 
