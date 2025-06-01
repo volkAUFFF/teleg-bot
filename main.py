@@ -13,6 +13,7 @@ import asyncio
 from contextlib import suppress
 import logging
 import sys
+import os
 from os import getenv
 import sqlite3
 import random
