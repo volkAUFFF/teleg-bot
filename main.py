@@ -36,41 +36,16 @@ from aiogram.enums import ChatType
 from aiogram.methods.send_gift import SendGift
 import asyncio
 
-import os
-import sys
-import logging
-import asyncio
-from aiohttp import web
-from aiogram import Bot, Dispatcher, types
-from aiogram.enums import ParseMode
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
 # Токен бота
 TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
-BOT_USERNAME = "@AsartiaCasinoBot" 
 SEND_API_KEY = ("364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
 CHANNEL_USERNAME = '@AsartiaCasino'
 
 
-WEBHOOK_HOST = os.getenv("RENDER_EXTERNAL_URL", "https://teleg-bot-btb1.onrender.com")
-WEBHOOK_PATH = f"/webhook/{TOKEN}"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
-
-
-WEB_SERVER_PORT = int(os.environ.get("PORT", 10000))
-
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
 
-
-
-
-WEBHOOK_HOST = os.getenv("RENDER_EXTERNAL_URL", "https://teleg-bot-btb1.onrender.com")
-WEBHOOK_PATH = f"/webhook/{TOKEN}"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
-
-
-WEB_SERVER_PORT = int(os.environ.get("PORT", 10000))
 
 
 
@@ -367,51 +342,12 @@ disable_web_page_preview=True)
 
 
 
-async def on_startup(bot: Bot):
-    await bot.set_webhook(WEBHOOK_URL)
-    print(f"Webhook set to: {WEBHOOK_URL}")
-
-async def on_shutdown(bot: Bot):
+ async def main() -> None:
     await bot.delete_webhook(drop_pending_updates=True)
-    print("Webhook deleted.")
+    await dp.start_polling(bot) 
 
-async def webhook_handler(request: web.Request):
-    update = types.Update.parse_obj(await request.json())
-    await dp.feed_update(bot, update)
-    return web.Response(status=200)
 
-async def main():
+
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    app = web.Application()
-    # SimpleRequestHandler для обработки вебхуков от Telegram
-    webhook_requests_handler = SimpleRequestHandler(
-        dispatcher=dp,
-        bot=bot,
-    )
-    # Регистрируем обработчик на определенном пути
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
-
-    # Функция для установки webhook при старте приложения
-    async def on_startup_webhook(app: web.Application):
-        await bot.set_webhook(WEBHOOK_URL)
-
-    # Функция для удаления webhook при завершении приложения
-    async def on_shutdown_webhook(app: web.Application):
-        await bot.delete_webhook(drop_pending_updates=True)
-
-    app.on_startup.append(on_startup_webhook)
-    app.on_shutdown.append(on_shutdown_webhook)
-
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', WEB_SERVER_PORT)
-    await site.start()
-    print(f"Webhook server started on http://0.0.0.0:{WEB_SERVER_PORT}{WEBHOOK_PATH}")
-    # Keep the server running indefinitely
-    await asyncio.Future()
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main())  
