@@ -382,33 +382,36 @@ async def webhook_handler(request: web.Request):
 
 async def main():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
     app = web.Application()
-    # Используем AiohttpRouteHandler из aiogram 3.x
-    webhook_requests_handler = TelegramRequestHandler(
+    # SimpleRequestHandler для обработки вебхуков от Telegram
+    webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
     )
+    # Регистрируем обработчик на определенном пути
     webhook_requests_handler.register(app, path=WEBHOOK_PATH)
 
-    # Регистрация startup и shutdown хуков
-    async def _startup(app):
-        await on_startup(bot)
-    app.on_startup.append(_startup)
+    # Функция для установки webhook при старте приложения
+    async def on_startup_webhook(app: web.Application):
+        await bot.set_webhook(WEBHOOK_URL)
 
-    async def _shutdown(app):
-        await on_shutdown(bot)
-    app.on_shutdown.append(_shutdown)
+    # Функция для удаления webhook при завершении приложения
+    async def on_shutdown_webhook(app: web.Application):
+        await bot.delete_webhook(drop_pending_updates=True)
+
+    app.on_startup.append(on_startup_webhook)
+    app.on_shutdown.append(on_shutdown_webhook)
 
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", WEB_SERVER_PORT)
+    site = web.TCPSite(runner, '0.0.0.0', WEB_SERVER_PORT)
     await site.start()
+    print(f"Webhook server started on http://0.0.0.0:{WEB_SERVER_PORT}{WEBHOOK_PATH}")
+    # Keep the server running indefinitely
+    await asyncio.Future()
 
-    print(f"Webhook server started on port {WEB_SERVER_PORT}")
-    # Keep the server running
-    while True:
-        await asyncio.sleep(3600)
+if __name__ == "__main__":
+    asyncio.run(main())
 
 if __name__ == "__main__":
     asyncio.run(main())
