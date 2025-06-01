@@ -35,12 +35,29 @@ from aiogram.types import ChatPermissions
 from aiogram.enums import ChatType
 from aiogram.methods.send_gift import SendGift
 import asyncio
+import os
+import sys
+import logging
+import asyncio
+from aiohttp import web
+from aiogram import Bot, Dispatcher, types
+from aiogram.enums import ParseMode
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_webhook
 
 
-
-API_TOKEN = ("7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas")
+TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
+BOT_USERNAME = "@AsartiaCasinoBot" 
 SEND_API_KEY = ("364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
 CHANNEL_USERNAME = '@AsartiaCasino'
+
+
+WEBHOOK_HOST = os.getenv("RENDER_EXTERNAL_URL", "https://teleg-bot-btb1.onrender.com")
+WEBHOOK_PATH = f"/webhook/{TOKEN}"
+WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+
+
+WEB_SERVER_PORT = int(os.environ.get("PORT", 10000))
+
 
 
 
@@ -338,11 +355,34 @@ disable_web_page_preview=True)
 
 
 
-async def main() -> None:
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot) 
+async def on_startup(dispatcher: Dispatcher, bot: Bot):
+    await bot.set_webhook(WEBHOOK_URL)
+    print(f"Webhook set to: {WEBHOOK_URL}")
 
+async def on_shutdown(dispatcher: Dispatcher, bot: Bot):
+    await bot.delete_webhook(drop_pending_updates=True)
+    print("Webhook deleted.")
+
+async def webhook_handler(request: web.Request):
+    update = types.Update.parse_obj(await request.json())
+    await dp.feed_update(bot, update)
+    return web.Response(status=200)
+
+async def main():
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+    app = web.Application()
+    app.add_routes([web.post(WEBHOOK_PATH, webhook_handler)])
+    app.on_startup.append(lambda app: on_startup(dp, bot))
+    app.on_shutdown.append(lambda app: on_shutdown(dp, bot))
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", WEB_SERVER_PORT)
+    await site.start()
+
+    print(f"Webhook server started on port {WEB_SERVER_PORT}")
+    await asyncio.Future()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main()) 
+    asyncio.run(main())
