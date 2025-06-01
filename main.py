@@ -42,22 +42,23 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-# Получаем данные из переменных окружения
-BOT_TOKEN = os.getenv("7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas")
+# Получаем из переменных окружения именно по ключу "BOT_TOKEN" — это имя переменной, а не токен
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
 WEBHOOK_DOMAIN = "https://teleg-bot-btb1.onrender.com"
 WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
 WEBHOOK_URL = f"{WEBHOOK_DOMAIN}{WEBHOOK_PATH}"
 
-# Токен бота
-TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
-SEND_API_KEY = ("364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
+# Токен бота (если хочешь, можно не хранить в переменной TOKEN, а всегда брать из BOT_TOKEN)
+TOKEN = BOT_TOKEN  # или просто используй BOT_TOKEN
+
+SEND_API_KEY = "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb"
 CHANNEL_USERNAME = '@AsartiaCasino'
-
-
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 send_client = CryptoPay(token=SEND_API_KEY)
+TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
 
 
 
