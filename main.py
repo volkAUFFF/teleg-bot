@@ -43,7 +43,7 @@ import asyncio
 from aiohttp import web
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
-from aiogram.webhook.routes import TelegramRequestHandler
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
 # Токен бота
 TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
