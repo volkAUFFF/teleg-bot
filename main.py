@@ -55,7 +55,7 @@ CHANNEL_USERNAME = '@AsartiaCasino'
 
 
 
-bot = Bot(token=TOKEN)
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 send_client = CryptoPay(token=SEND_API_KEY)
 
