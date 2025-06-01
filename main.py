@@ -347,12 +347,10 @@ disable_web_page_preview=True)
 
 
 
-# При запуске
 async def on_startup(app: web.Application):
     await bot.set_webhook(WEBHOOK_URL)
     print(f"Webhook установлен: {WEBHOOK_URL}")
 
-# При остановке
 async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
     print("Webhook удалён")
@@ -364,11 +362,10 @@ def main():
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
 
-    # Привязка webhook к пути
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
     setup_application(app, dp)
 
-    port = int(os.getenv("PORT", 8080))  # Render автоматически задаёт переменную PORT
+    port = int(os.getenv("PORT", 8080))
     web.run_app(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
