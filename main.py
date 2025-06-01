@@ -43,12 +43,6 @@ SEND_API_KEY = ("364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
 CHANNEL_USERNAME = '@AsartiaCasino'
 
 
-bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
-dp = Dispatcher()
-
-
-
-
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
