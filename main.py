@@ -36,6 +36,16 @@ from aiogram.enums import ChatType
 from aiogram.methods.send_gift import SendGift
 import asyncio
 
+from aiohttp import web
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+
+# Получаем данные из переменных окружения
+BOT_TOKEN = os.getenv("7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas")
+WEBHOOK_DOMAIN = os.getenv("WEBHOOK_DOMAIN")  # Пример: https://your-app.onrender.com
+WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
+WEBHOOK_URL = f"{WEBHOOK_DOMAIN}{WEBHOOK_PATH}"
 
 # Токен бота
 TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
@@ -336,12 +346,29 @@ disable_web_page_preview=True)
 
 
 
-async def main() -> None:
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot) 
+# При запуске
+async def on_startup(app: web.Application):
+    await bot.set_webhook(WEBHOOK_URL)
+    print(f"Webhook установлен: {WEBHOOK_URL}")
 
+# При остановке
+async def on_shutdown(app: web.Application):
+    await bot.delete_webhook()
+    print("Webhook удалён")
 
+def main():
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+    app = web.Application()
+    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
+
+    # Привязка webhook к пути
+    SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp)
+
+    port = int(os.getenv("PORT", 8080))  # Render автоматически задаёт переменную PORT
+    web.run_app(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())  
+    main()
