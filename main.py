@@ -43,7 +43,7 @@ import asyncio
 from aiohttp import web
 from aiogram import Bot, Dispatcher, types
 from aiogram.enums import ParseMode
-from aiogram.webhook.aiohttp_server import AiohttpRouteHandler
+from aiogram.webhook.routes import TelegramRequestHandler
 
 # Токен бота
 TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
@@ -385,8 +385,11 @@ async def main():
 
     app = web.Application()
     # Используем AiohttpRouteHandler из aiogram 3.x
-    handler = AiohttpRouteHandler(dispatcher=dp, bot=bot)
-    handler.register(app, path=WEBHOOK_PATH)
+    webhook_requests_handler = TelegramRequestHandler(
+        dispatcher=dp,
+        bot=bot,
+    )
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
 
     # Регистрация startup и shutdown хуков
     async def _startup(app):
