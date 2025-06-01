@@ -44,7 +44,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 # Получаем данные из переменных окружения
 BOT_TOKEN = os.getenv("7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas")
-WEBHOOK_DOMAIN = os.getenv("https://teleg-bot-btb1.onrender.com")  # Пример: https://your-app.onrender.com
+WEBHOOK_DOMAIN = "https://teleg-bot-btb1.onrender.com"
 WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
 WEBHOOK_URL = f"{WEBHOOK_DOMAIN}{WEBHOOK_PATH}"
 
@@ -347,9 +347,22 @@ disable_web_page_preview=True)
 
 
 
+
+async def set_webhook_with_retry():
+    while True:
+        try:
+            await bot.set_webhook(WEBHOOK_URL)
+            print(f"Webhook установлен: {WEBHOOK_URL}")
+            break
+        except ClientConnectorError:
+            print("Не могу подключиться к Telegram, повтор через 5 секунд...")
+            await asyncio.sleep(5)
+        except Exception as e:
+            print(f"Ошибка установки webhook: {e}")
+            await asyncio.sleep(5)
+
 async def on_startup(app: web.Application):
-    await bot.set_webhook(WEBHOOK_URL)
-    print(f"Webhook установлен: {WEBHOOK_URL}")
+    await set_webhook_with_retry()
 
 async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
