@@ -42,24 +42,32 @@ from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 
-# Настройка логирования
+# ===== НАСТРОЙКА ЛОГИРОВАНИЯ =====
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     stream=sys.stdout
 )
 
-# Конфигурация
-BOT_TOKEN = os.getenv("BOT_TOKEN", "7701528122:AAG5wce45i0oGp0dlWNP14PIU_cH9Pw8t1U")
-SEND_API_KEY = os.getenv("SEND_API_KEY", "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
+# ===== КОНФИГУРАЦИЯ (ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ) =====
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # Обязательно!
+SEND_API_KEY = os.getenv("SEND_API_KEY")  # Обязательно!
 CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "@AsartiaCasino")
-ADMIN_ID = int(os.getenv("ADMIN_ID", 767154085))
+ADMIN_ID = int(os.getenv("ADMIN_ID", 767154085))  # Ваш ID в Telegram
 
-# Настройки вебхука
-WEB_SERVER_HOST = "0.0.0.0"
+# ===== ПРОВЕРКА НАЛИЧИЯ КЛЮЧЕВЫХ ПЕРЕМЕННЫХ =====
+if not BOT_TOKEN:
+    logging.error("❌ ОШИБКА: Не указан BOT_TOKEN в переменных окружения!")
+    sys.exit(1)
+
+if not SEND_API_KEY:
+    logging.error("❌ ОШИБКА: Не указан SEND_API_KEY в переменных окружения!")
+    sys.exit(1)
+
+WEB_SERVER_HOST = "0.0.0.0"  
 WEB_SERVER_PORT = int(os.getenv("PORT", 8080)) 
 WEBHOOK_PATH = "/webhook"
-BASE_WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://teleg-bot-btb1.onrender.com") 
+BASE_WEBHOOK_URL = os.getenv("WEBHOOK_URL")  
 
 # Инициализация бота
 bot = Bot(token=BOT_TOKEN)
@@ -73,31 +81,58 @@ class BetStates(StatesGroup):
     crypto_bet = State()
     star_bet = State()
 
-async def on_startup(bot: Bot):
-    await bot.set_webhook(
-        f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
-        drop_pending_updates=True
-    )
-    await bot.send_message(ADMIN_ID, "🤖 Бот успешно запущен!")
-    
-    # Запускаем keep-alive
-    asyncio.create_task(keep_alive())
+# ===== ОСНОВНЫЕ ФУНКЦИИ =====
+async def on_startup():
+    """Действия при запуске бота"""
+    try:
+        if BASE_WEBHOOK_URL:
+            await bot.set_webhook(
+                f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
+                drop_pending_updates=True
+            )
+        await bot.send_message(ADMIN_ID, "🤖 Бот успешно запущен!")
+    except Exception as e:
+        logging.error(f"🚨 Ошибка при запуске: {e}")
+        raise
+
+async def on_shutdown():
+    """Действия при выключении бота"""
+    try:
+        if BASE_WEBHOOK_URL:
+            await bot.delete_webhook()
+        await bot.send_message(ADMIN_ID, "⚠️ Бот выключается...")
+        await bot.session.close()
+    except Exception as e:
+        logging.error(f"🚨 Ошибка при выключении: {e}")
 
 async def keep_alive():
-    """Регулярные запросы для предотвращения сна"""
+    """Регулярные запросы, чтобы Render не усыплял бота"""
     while True:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{BASE_WEBHOOK_URL}/ping") as resp:
-                    logging.info(f"Keep-alive ping: {resp.status}")
+                async with session.get(f"{BASE_WEBHOOK_URL or 'http://localhost'}/ping") as resp:
+                    logging.info(f"🔁 Keep-alive ping: {resp.status}")
         except Exception as e:
-            logging.error(f"Keep-alive error: {e}")
-        await asyncio.sleep(300)  # Каждые 5 минут
+            logging.error(f"🚨 Keep-alive error: {e}")
+        await asyncio.sleep(300)  # Пинг каждые 5 минут
 
-async def on_shutdown(bot: Bot):
-    await bot.delete_webhook()
-    await bot.send_message(ADMIN_ID, "⚠️ Бот выключается!")
-    await bot.session.close()
+async def ping_handler(request: web.Request):
+    """Endpoint для проверки работы бота"""
+    return web.Response(text="✅ Bot is alive")
+
+async def setup_webhook():
+    """Настройка вебхука"""
+    app = web.Application()
+    app.router.add_get("/ping", ping_handler)
+    
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot,
+    )
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp, bot=bot)
+    
+    return app
 
 
 @dp.message(Command("start"))
@@ -382,53 +417,44 @@ disable_web_page_preview=True)
 
 
 
-async def ping_handler(request: web.Request):
-    """Endpoint для проверки работоспособности"""
-    return web.Response(text="Bot is alive and kicking!")
-
+# ===== ЗАПУСК БОТА =====
 async def main():
-    # Настройка веб-сервера
-    app = web.Application()
-    app.router.add_get("/ping", ping_handler)
-    
-    # Регистрация обработчика вебхуков
-    webhook_requests_handler = SimpleRequestHandler(
-        dispatcher=dp,
-        bot=bot,
-    )
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
-    setup_application(app, dp, bot=bot)
-    
-    # Запуск сервера
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(
-        runner,
-        host=WEB_SERVER_HOST,
-        port=WEB_SERVER_PORT,
-        reuse_port=True
-    )
-    
     try:
+        # Настройка веб-сервера
+        app = await setup_webhook()
+        runner = web.AppRunner(app)
+        await runner.setup()
+        
+        site = web.TCPSite(
+            runner,
+            host=WEB_SERVER_HOST,
+            port=WEB_SERVER_PORT,
+            reuse_port=True
+        )
+        
         await site.start()
-        logging.info(f"Server started on port {WEB_SERVER_PORT}")
-        await on_startup(bot)
+        logging.info(f"🌐 Сервер запущен на порту {WEB_SERVER_PORT}")
+        
+        # Инициализация бота
+        await on_startup()
+        asyncio.create_task(keep_alive())
         
         # Бесконечный цикл
         while True:
             await asyncio.sleep(3600)
             
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Bot stopped by user")
+        logging.info("🛑 Бот остановлен пользователем")
     except Exception as e:
-        logging.critical(f"Fatal error: {e}")
+        logging.critical(f"💥 Критическая ошибка: {e}")
     finally:
-        await on_shutdown(bot)
-        await runner.cleanup()
+        await on_shutdown()
+        if 'runner' in locals():
+            await runner.cleanup()
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        logging.critical(f"Failed to start: {e}")
+        logging.critical(f"💥 Не удалось запустить бота: {e}")
         sys.exit(1)
