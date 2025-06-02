@@ -56,7 +56,7 @@ ADMIN_ID = 767154085  # Замените на ваш айди в телегра�
 
 # Инициализация бота
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 send_client = CryptoPay(token=SEND_API_KEY)
 
 
