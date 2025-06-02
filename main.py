@@ -49,7 +49,7 @@ logging.basicConfig(
 )
 
 # Конфигурация
-BOT_TOKEN = "7440992600:AAGDVqmkWSKR6I9RN0tCwbyJyFIZ2gVpfvM"
+BOT_TOKEN = "7701528122:AAFNP_uiNrSB18o9EVusyTR-FiNHkjrNhas"
 SEND_API_KEY = "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb"
 CHANNEL_USERNAME = "@AsartiaCasino"
 ADMIN_ID = 767154085  # Замените на ваш айди в телеграм
