@@ -42,7 +42,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "7440992600:AAGDVqmkWSKR6I9RN0tCwbyJyFIZ2gVpfvM")
+BOT_TOKEN11 = os.getenv("BOT_TOKEN", "7440992600:AAGDVqmkWSKR6I9RN0tCwbyJyFIZ2gVpfvM")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    logging.critical("Не задан BOT_TOKEN!")
+    sys.exit(1)
 SEND_API_KEY = os.getenv("SEND_API_KEY", "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
 CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "@AsartiaCasino")
 
