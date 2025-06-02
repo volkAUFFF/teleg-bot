@@ -36,27 +36,27 @@ from aiogram.types import ChatPermissions
 from aiogram.enums import ChatType
 from aiogram.methods.send_gift import SendGift
 import asyncio
-
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-BOT_TOKEN11 = os.getenv("BOT_TOKEN", "7440992600:AAGDVqmkWSKR6I9RN0tCwbyJyFIZ2gVpfvM")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    logging.critical("Не задан BOT_TOKEN!")
-    sys.exit(1)
-SEND_API_KEY = os.getenv("SEND_API_KEY", "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
-CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "@AsartiaCasino")
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout
+)
 
-# Webhook настройки
-WEBHOOK_DOMAIN = os.getenv("WEBHOOK_DOMAIN", "https://teleg-bot-btb1.onrender.com")
-WEBHOOK_PATH = f"/webhook/{BOT_TOKEN}"
-WEBHOOK_URL = f"{WEBHOOK_DOMAIN}{WEBHOOK_PATH}"
+# Конфигурация
+BOT_TOKEN = "7440992600:AAGDVqmkWSKR6I9RN0tCwbyJyFIZ2gVpfvM"
+SEND_API_KEY = "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb"
+CHANNEL_USERNAME = "@AsartiaCasino"
+ADMIN_ID = 767154085  # Замените на ваш айди в телеграм
 
+# Инициализация бота
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(bot)
 send_client = CryptoPay(token=SEND_API_KEY)
 
 
@@ -353,67 +353,54 @@ disable_web_page_preview=True)
 
 
 
-async def set_webhook_with_retry():
+# ========== СИСТЕМА ПОДДЕРЖАНИЯ АКТИВНОСТИ ========== #
+
+async def ping_server():
     while True:
         try:
-            await bot.set_webhook(WEBHOOK_URL)
-            logging.info(f"Webhook установлен: {WEBHOOK_URL}")
-            break
-        except ClientConnectorError:
-            logging.warning("Не могу подключиться к Telegram, повтор через 5 секунд...")
-            await asyncio.sleep(5)
+            async with ClientSession() as session:
+                async with session.get("https://google.com") as resp:
+                    logging.info(f"Ping status: {resp.status}")
         except Exception as e:
-            logging.error(f"Ошибка установки webhook: {e}")
-            await asyncio.sleep(5)
+            logging.error(f"Ping error: {e}")
+        await asyncio.sleep(60)  # Пинг каждую минуту
 
-async def on_startup(app: web.Application):
-    await set_webhook_with_retry()
-    # Запускаем фоновую задачу для поддержания активности
-    asyncio.create_task(keep_alive_ping())
+async def on_startup():
+    await bot.send_message(ADMIN_ID, "🤖 Бот запущен и работает!")
+    asyncio.create_task(ping_server())
 
-async def keep_alive_ping():
-    """Периодически пингует сервер для предотвращения сна"""
-    while True:
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f"{WEBHOOK_DOMAIN}/keepalive") as resp:
-                    logging.info(f"Keep-alive ping: {resp.status}")
-        except Exception as e:
-            logging.error(f"Keep-alive error: {e}")
-        await asyncio.sleep(300)  # Пинг каждые 5 минут
+async def on_shutdown():
+    await bot.send_message(ADMIN_ID, "⚠️ Бот выключается!")
+    await bot.session.close()
 
-async def on_shutdown(app: web.Application):
-    await bot.delete_webhook()
-    logging.info("Webhook удалён")
+# ========== ЗАПУСК СЕРВЕРА ========== #
 
-def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        stream=sys.stdout
-    )
+async def web_handler(request):
+    return web.Response(text="Bot is running")
 
+async def start_web_server():
     app = web.Application()
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
+    app.router.add_get("/", web_handler)
+    app.router.add_get("/ping", web_handler)
     
-    # Добавляем keep-alive endpoint
-    app.router.add_get("/keepalive", keep_alive)
-    
-    SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
-    setup_application(app, dp)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    await site.start()
 
-    port = int(os.getenv("PORT", 8080))
-    web.run_app(
-        app,
-        host="0.0.0.0",
-        port=port,
-        access_log=logging.getLogger("aiohttp.access"),
-    )
+async def main():
+    await on_startup()
+    await start_web_server()
+    
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await on_shutdown()
 
 if __name__ == "__main__":
     try:
-        main()
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("Bot stopped")
     except Exception as e:
         logging.critical(f"Fatal error: {e}")
-        sys.exit(1)
