@@ -8,6 +8,7 @@ from aiosend import CryptoPay
 from aiogram import F
 import asyncio
 import logging
+import aiohttp
 import sys
 import asyncio
 from contextlib import suppress
