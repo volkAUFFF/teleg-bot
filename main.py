@@ -41,6 +41,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
+
 # Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
@@ -49,10 +50,16 @@ logging.basicConfig(
 )
 
 # Конфигурация
-BOT_TOKEN = "7701528122:AAG5wce45i0oGp0dlWNP14PIU_cH9Pw8t1U"
-SEND_API_KEY = "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb"
-CHANNEL_USERNAME = "@AsartiaCasino"
-ADMIN_ID = 767154085  # Замените на ваш айди в телеграм
+BOT_TOKEN = os.getenv("BOT_TOKEN", "7701528122:AAG5wce45i0oGp0dlWNP14PIU_cH9Pw8t1U")
+SEND_API_KEY = os.getenv("SEND_API_KEY", "364087:AAllpmezSsFgoxEGZLXmxyYbG5zusS4Ptjb")
+CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "@AsartiaCasino")
+ADMIN_ID = int(os.getenv("ADMIN_ID", 767154085))
+
+# Настройки вебхука
+WEB_SERVER_HOST = "0.0.0.0"
+WEB_SERVER_PORT = int(os.getenv("PORT", 8080)) 
+WEBHOOK_PATH = "/webhook"
+BASE_WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://teleg-bot-btb1.onrender.com") 
 
 # Инициализация бота
 bot = Bot(token=BOT_TOKEN)
@@ -66,15 +73,31 @@ class BetStates(StatesGroup):
     crypto_bet = State()
     star_bet = State()
 
+async def on_startup(bot: Bot):
+    await bot.set_webhook(
+        f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
+        drop_pending_updates=True
+    )
+    await bot.send_message(ADMIN_ID, "🤖 Бот успешно запущен!")
+    
+    # Запускаем keep-alive
+    asyncio.create_task(keep_alive())
+
 async def keep_alive():
+    """Регулярные запросы для предотвращения сна"""
     while True:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://teleg-bot-btb1.onrender.com/ping") as resp:
+                async with session.get(f"{BASE_WEBHOOK_URL}/ping") as resp:
                     logging.info(f"Keep-alive ping: {resp.status}")
         except Exception as e:
             logging.error(f"Keep-alive error: {e}")
         await asyncio.sleep(300)  # Каждые 5 минут
+
+async def on_shutdown(bot: Bot):
+    await bot.delete_webhook()
+    await bot.send_message(ADMIN_ID, "⚠️ Бот выключается!")
+    await bot.session.close()
 
 
 @dp.message(Command("start"))
@@ -359,76 +382,53 @@ disable_web_page_preview=True)
 
 
 
-# ========== СИСТЕМА ПОДДЕРЖАНИЯ АКТИВНОСТИ ========== #
-
-async def ping_server():
-    while True:
-        try:
-            async with ClientSession() as session:
-                async with session.get("https://google.com") as resp:
-                    logging.info(f"Ping status: {resp.status}")
-        except Exception as e:
-            logging.error(f"Ping error: {e}")
-        await asyncio.sleep(60)  # Пинг каждую минуту
-
-async def on_startup():
-    await bot.send_message(ADMIN_ID, "🤖 Бот запущен и работает!")
-    asyncio.create_task(keep_alive())
-
-async def on_shutdown():
-    await bot.send_message(ADMIN_ID, "⚠️ Бот выключается!")
-    await bot.session.close()
-
-# ========== ЗАПУСК СЕРВЕРА ========== #
-
-async def web_handler(request):
-    return web.Response(text="Bot is running")
-
-async def start_web_server():
-    app = web.Application()
-    app.router.add_get("/", web_handler)
-    app.router.add_get("/ping", web_handler)
-    
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
-    await site.start()
+async def ping_handler(request: web.Request):
+    """Endpoint для проверки работоспособности"""
+    return web.Response(text="Bot is alive and kicking!")
 
 async def main():
-    await on_startup()
-    await start_web_server()
-    
-    try:
-        await dp.start_polling(bot)
-    finally:
-        await on_shutdown()
-async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
-    
-    # Настройка вебхука
+    # Настройка веб-сервера
     app = web.Application()
+    app.router.add_get("/ping", ping_handler)
+    
+    # Регистрация обработчика вебхуков
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
     )
-    webhook_requests_handler.register(app, path="/webhook")
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
     
     # Запуск сервера
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
-    await site.start()
-    
-    # Установка вебхука
-    await bot.set_webhook(
-        url="https://your-render-app-name.onrender.com/webhook",
-        drop_pending_updates=True
+    site = web.TCPSite(
+        runner,
+        host=WEB_SERVER_HOST,
+        port=WEB_SERVER_PORT,
+        reuse_port=True
     )
     
-    await on_startup()
     try:
+        await site.start()
+        logging.info(f"Server started on port {WEB_SERVER_PORT}")
+        await on_startup(bot)
+        
+        # Бесконечный цикл
         while True:
-            await asyncio.sleep(3600)  # Просто держим приложение запущенным
+            await asyncio.sleep(3600)
+            
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Bot stopped by user")
+    except Exception as e:
+        logging.critical(f"Fatal error: {e}")
     finally:
-        await on_shutdown()
+        await on_shutdown(bot)
+        await runner.cleanup()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logging.critical(f"Failed to start: {e}")
+        sys.exit(1)
