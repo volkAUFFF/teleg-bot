@@ -66,9 +66,15 @@ class BetStates(StatesGroup):
     crypto_bet = State()
     star_bet = State()
 
-# Keep alive endpoint для предотвращения сна
-async def keep_alive(request):
-    return web.Response(text="Bot is alive")
+async def keep_alive():
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://teleg-bot-btb1.onrender.com/ping") as resp:
+                    logging.info(f"Keep-alive ping: {resp.status}")
+        except Exception as e:
+            logging.error(f"Keep-alive error: {e}")
+        await asyncio.sleep(300)  # Каждые 5 минут
 
 
 @dp.message(Command("start"))
@@ -367,7 +373,7 @@ async def ping_server():
 
 async def on_startup():
     await bot.send_message(ADMIN_ID, "🤖 Бот запущен и работает!")
-    asyncio.create_task(ping_server())
+    asyncio.create_task(keep_alive())
 
 async def on_shutdown():
     await bot.send_message(ADMIN_ID, "⚠️ Бот выключается!")
@@ -396,11 +402,33 @@ async def main():
         await dp.start_polling(bot)
     finally:
         await on_shutdown()
-
-if __name__ == "__main__":
+async def main():
+    await bot.delete_webhook(drop_pending_updates=True)
+    
+    # Настройка вебхука
+    app = web.Application()
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot,
+    )
+    webhook_requests_handler.register(app, path="/webhook")
+    setup_application(app, dp, bot=bot)
+    
+    # Запуск сервера
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    await site.start()
+    
+    # Установка вебхука
+    await bot.set_webhook(
+        url="https://your-render-app-name.onrender.com/webhook",
+        drop_pending_updates=True
+    )
+    
+    await on_startup()
     try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logging.info("Bot stopped")
-    except Exception as e:
-        logging.critical(f"Fatal error: {e}")
+        while True:
+            await asyncio.sleep(3600)  # Просто держим приложение запущенным
+    finally:
+        await on_shutdown()
