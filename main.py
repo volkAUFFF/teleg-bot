@@ -212,7 +212,7 @@ async def crypto_bet(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(BetStates.crypto_bet)
 
 
-async def check_payment(invoice_url: str, message: Message, user_id):
+async def check_payment(invoice_url: str, message: Message):
     user = message.from_user
     username = user.full_name
     username1 = user.username or user.id
