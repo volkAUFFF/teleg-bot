@@ -250,7 +250,7 @@ async def check_payment(invoice_url: str, message: Message):
                         check = await send_client.create_check(
             asset="USDT",
             amount=win,
-            telegram_user_id=user.id, 
+            user_id=user.id, 
             description=f"Чек для {username}"
                     )
                         builder3 = InlineKeyboardBuilder()
