@@ -541,9 +541,10 @@ disable_web_page_preview=True)
         await bot.send_dice(chat_id=message.chat.id, emoji="🎲")
         await bot.send_dice(chat_id='@AsartiaCasino', emoji="🎲")
         await asyncio.sleep(1)
-        await bot.send_message(chat_id='@AsartiaCasino', text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Подарок отправил тебе в личные сообщения</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
+        if play == 1:
+            await bot.send_message(chat_id='@AsartiaCasino', text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Подарок отправил тебе в личные сообщения</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
             
-        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
+            await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
            
             if stars < 25:
                 await bot(SendGift(
