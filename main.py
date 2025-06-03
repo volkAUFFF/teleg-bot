@@ -376,7 +376,7 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                     win_amount = amount * 1.5
 
                     await message.answer(
-                        f'<pre>💥 Ставка по криптоботу успешно принята!</pre>\n<i>Игрок: <a href="{hrefka}">{username}</a>\n Сумма: <u>{amount} $</u></i>\n<i>Выбор: {'Больше' if prediction == 'high' else 'Меньше'}</i>',
+                        f'<pre>💥 Ставка по криптоботу успешно принята!</pre>\n<i>Игрок: <a href="{hrefka}">{username}</a>\n Сумма: <u>{amount} $</u></i>\n<i>Выбор: {"Больше" if prediction == "high" else "Меньше"}</i>',
                         parse_mode='html', disable_web_page_preview=True
                     )
 
@@ -522,7 +522,7 @@ async def process_successful_payment(message: types.Message):
 
 
     if payment.currency == "XTR":
-        sent_msg = await message.answer(f"""<b><pre>💥 Ставка за звезды успешно принята!</pre></b>
+        sent_msg = await message.answer(f"""<pre>💥 Ставка за звезды успешно принята!</pre>
 <i>Игрок: <u><a href="{hrefka}">{username}</a></u>
 Сумма: <u>{amount} звезд</u>
 </i>""", parse_mode='html', disable_web_page_preview=True)
