@@ -188,7 +188,7 @@ async def choose_bet_type(callback: types.CallbackQuery):
    
 
     await callback.message.answer(
-        f'<i>💥 Ваш профиль:</i>\n<pre><b>  Ник: <u>{username}</u>\n  Айди: <u>{callback.message.from_user.id}</u></b></pre>\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+        f'<i>💥 Ваш профиль:</i>\n<pre><b>  Ник: <u>{username}</u>\n  Айди: <u>{callback.message.from_user.id}</u></b></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
         reply_markup=kb.as_markup(),
         parse_mode='html',
         disable_web_page_preview=True
