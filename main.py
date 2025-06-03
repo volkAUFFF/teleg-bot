@@ -218,7 +218,7 @@ async def check_payment(invoice_url: str, message: Message, user_id):
     username = user.full_name
     username1 = user.username or user.id
     hrefka = f't.me/{username1}'
-    playy = random.randint(1, 300)
+    playy = random.randint(1, 2)
 
     try:
         while True:
