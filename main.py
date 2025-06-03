@@ -541,22 +541,23 @@ disable_web_page_preview=True)
         await bot.send_dice(chat_id=message.chat.id, emoji="🎲")
         await bot.send_dice(chat_id='@AsartiaCasino', emoji="🎲")
         await asyncio.sleep(1)
-        if play == 1:
             await bot.send_message(chat_id='@AsartiaCasino', text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Подарок отправил тебе в личные сообщения</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
-            await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
+            
+            await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
+           
             if stars < 25:
                 await bot(SendGift(
-        gift_id=random.choice(['5170145012310081615', '5170233102089322756']),
+        gift_id=5170145012310081615,
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
             elif stars < 50: 
                 await bot(SendGift(
-        gift_id=random.choice(['5168103777563050263', '5170250947678437525']),
+        gift_id=5168103777563050263,
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
             else:
                 await bot(SendGift(
-        gift_id=random.choice(['5170144170496491616', '5170314324215857265', '5170564780938756245']),
+        gift_id=5170564780938756245,
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
 
