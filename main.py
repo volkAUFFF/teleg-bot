@@ -394,19 +394,22 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                         )
                         win_kb = InlineKeyboardBuilder()
                         win_kb.button(text="💰 Забрать выигрыш", url=check.bot_check_url)
+
                         await bot.send_message(
-                            chat_id=message.chat.id,
-                            text=f"<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>",
-                            reply_markup=win_kb.as_markup(),
-                            parse_mode='html',
-                            disable_web_page_preview=True
-                        )
+    chat_id=message.chat.id,
+    text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+    reply_markup=win_kb.as_markup(),
+    parse_mode='html',
+    disable_web_page_preview=True
+)
+
                         await bot.send_message(
-                            chat_id='@AsartiaCasino',
-                            text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Ваш выигрыш в личных сообщениях!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
-                            parse_mode='html',
-                            disable_web_page_preview=True
-                        )
+    chat_id=message.chat.id,
+    text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Выигрыш отправил тебе в личные сообщения!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+    parse_mode='html',
+    disable_web_page_preview=True
+)
+
                     
                     else:
                         await bot.send_message(
@@ -425,7 +428,6 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
             await asyncio.sleep(5)
     except Exception as e:
         logging.error(f"[❗] Ошибка в check_random_payment: {e}")
-
 
 
 
