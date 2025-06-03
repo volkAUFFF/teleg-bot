@@ -77,6 +77,7 @@ class BetStates(StatesGroup):
 
 # ===== ОСНОВНЫЕ ФУНКЦИИ =====
 async def on_startup():
+    """Действия при запуске бота"""
     try:
         if BASE_WEBHOOK_URL:
             await bot.set_webhook(
@@ -89,6 +90,7 @@ async def on_startup():
         raise
 
 async def on_shutdown():
+    """Действия при выключении бота"""
     try:
         if BASE_WEBHOOK_URL:
             await bot.delete_webhook()
@@ -98,6 +100,7 @@ async def on_shutdown():
         logging.error(f"🚨 Ошибка при выключении: {e}")
 
 async def keep_alive():
+    """Регулярные запросы, чтобы Render не усыплял бота"""
     while True:
         try:
             async with aiohttp.ClientSession() as session:
@@ -105,12 +108,14 @@ async def keep_alive():
                     logging.info(f"🔁 Keep-alive ping: {resp.status}")
         except Exception as e:
             logging.error(f"🚨 Keep-alive error: {e}")
-        await asyncio.sleep(300)
+        await asyncio.sleep(300)  # Пинг каждые 5 минут
 
 async def ping_handler(request: web.Request):
+    """Endpoint для проверки работы бота"""
     return web.Response(text="✅ Bot is alive")
 
 async def setup_webhook():
+    """Настройка вебхука"""
     app = web.Application()
     app.router.add_get("/ping", ping_handler)
     
@@ -154,7 +159,7 @@ async def start_cmd(message: types.Message):
     kb.adjust(2)
 
     await message.answer(
-        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"\n\n<pre>Ставь легко, выигрывай быстро, твой шанс сорвать куш уже здесь!</pre></b>',
+        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"\n\n<pre>Ставь легко, выигрывай быстро, твой шанс разбогатеть уже здесь!</pre>\n\n— Выберите опцию:</b>',
         reply_markup=kb.as_markup(),
         disable_web_page_preview=True,
         parse_mode='html'
@@ -170,7 +175,7 @@ async def profile_handler(callback: types.CallbackQuery):
     kb.button(text="Сделать ставку", callback_data="make_bet")
 
     await callback.message.answer(
-        f'<i>💥 Ваш профиль:</i>\n<pre><b>  Ник: <u>{username}</u>\n  Айди: <u>{user_id}</u></b></pre>\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+        f'<i>💥 Ваш профиль:</i>\n<pre><b>  Ник: <u>{username}</u>\n  Айди: <u>{user_id}</u>\n  Способы оплаты: <u>CryptoBot(USDT) / Telegram stars</u></b></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
         reply_markup=kb.as_markup(),
         parse_mode='html',
         disable_web_page_preview=True
@@ -181,12 +186,13 @@ async def make_bet_handler(callback: types.CallbackQuery):
     await callback.message.delete()
 
     kb = InlineKeyboardBuilder()
-    kb.button(text="💸 Ставка по крипто боту", callback_data="crypto_bet")
-    kb.button(text="💫 Ставка за звезды", callback_data="star_bet")
+    kb.button(text="💸 Ставка // крипто бот", callback_data="crypto_bet")
+    kb.button(text="💫 Ставка // звезды", callback_data="star_bet")
+    kb.button(text="❓ Как сделать ставку", url="t.me/AsartiaCasino/40")
     kb.adjust(2)
 
     await callback.message.answer(
-        "<i>😋 Выберите опцию ниже:</i>",
+        "<pre><i>😋 Выберите опцию ниже:</i></pre>",
         reply_markup=kb.as_markup(),
         parse_mode='html'
     )
