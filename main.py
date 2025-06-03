@@ -251,8 +251,7 @@ async def check_payment(invoice_url: str, message: Message):
                         check = await send_client.create_check(
             asset="USDT",
             amount=win,
-            pin_to_user_id=user.id, 
-            description=f"Чек для {username}"
+            pin_to_user_id=user.id
                     )
                         builder3 = InlineKeyboardBuilder()
                         builder3.button(text="💰 Забрать чек", url=check.bot_check_url)
