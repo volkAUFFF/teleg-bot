@@ -212,12 +212,13 @@ async def crypto_bet(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(BetStates.crypto_bet)
 
 
-async def check_payment(invoice_url: str, message: Message):
+async def check_payment(invoice_url: str, message: Message, user_id):
     user = message.from_user
     username = user.full_name
     username1 = user.username or user.id
     hrefka = f't.me/{username1}'
     playy = random.randint(1, 2)
+    user_id = message.from_user.id
 
     try:
         while True:
@@ -250,7 +251,7 @@ async def check_payment(invoice_url: str, message: Message):
                         check = await send_client.create_check(
             asset="USDT",
             amount=win,
-            user_id=user.id, 
+            pin_to_user_id=user.id, 
             description=f"Чек для {username}"
                     )
                         builder3 = InlineKeyboardBuilder()
