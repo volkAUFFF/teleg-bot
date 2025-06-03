@@ -117,7 +117,7 @@ async def keep_alive():
                     logging.info(f"🔁 Keep-alive ping: {resp.status}")
         except Exception as e:
             logging.error(f"🚨 Keep-alive error: {e}")
-        await asyncio.sleep(300)  # Пинг каждые 5 минут
+        await asyncio.sleep(300)
 
 async def ping_handler(request: web.Request):
     """Endpoint для проверки работы бота"""
@@ -151,6 +151,8 @@ async def start_cmd(message: types.Message):
     kb.button(text="⚡ Играть", callback_data="make_bet")
     kb.button(text="💼 Профиль", callback_data="profile")
     kb.button(text='❓Помощь', url='https://telegra.ph/')
+    kb.button(text="⚡ Администрция", url="https://t.me/AsartiaCasino/137")
+    kb.button(text="❓ Как сделать ставку", url="t.me/AsartiaCasino/40")
     kb.adjust(2)  
 
     if chat_member.status not in ['member', 'administrator', 'creator']:
@@ -158,13 +160,13 @@ async def start_cmd(message: types.Message):
                 [InlineKeyboardButton(text="🎰 Перейти в канал", url=f"t.me/AsartiaCasino")]
             ])
             await message.answer(
-                "<b>❗ Вы не подписаны на канал. Пожалуйста, подпишитесь, чтобы продолжить. Когда подпишитесь, снова напишите /start</b>",
+                "<b>❗ Вы не подписаны на канал @AsartiaCasino. Пожалуйста, подпишитесь, чтобы продолжить. Когда подпишитесь, снова напишите /start</b>",
                 reply_markup=channel, parse_mode='html'
             )
     else:
 
         await message.answer(
-        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"\n\n<pre>Ставь легко, выигрывай быстро, твой шанс сорвать куш уже здесь!</pre></b>',
+        f'<b>💎 <a href="{hrefka}">{username}</a>, добро пожаловать в бота "Asartia Casino"\n\n<pre>Ставь легко, выигрывай быстро, твой шанс сорвать куш уже здесь!</pre>\n\n — Выбери опцию:</b>',
         reply_markup=kb.as_markup(),
         disable_web_page_preview=True,
         parse_mode='html'
@@ -179,7 +181,11 @@ async def choose_bet_type(callback: types.CallbackQuery):
 
     href = 't.me/AsartiaCasino'
     kb = InlineKeyboardBuilder()
-    kb.button(text="Сделать ставку", callback_data="make_bet") 
+    kb.button(text="💵 Сделать ставку", callback_data="make_bet")
+    kb.button(text="⚡ Администрция", url="https://t.me/AsartiaCasino/137")
+    kb.button(text="❓ Как сделать ставку", url="t.me/AsartiaCasino/40")
+    kb.adjust(2)
+   
 
     await callback.message.answer(
         f'<i>💥 Ваш профиль:</i>\n<pre><b>  Ник: <u>{username}</u>\n  Айди: <u>{callback.message.from_user.id}</u></b></pre>\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
@@ -194,12 +200,14 @@ async def choose_bet_type(callback: types.CallbackQuery):
     await callback.message.delete()
 
     kb = InlineKeyboardBuilder()
-    kb.button(text="💸 Ставка по крипто боту", callback_data="crypto_bet")
-    kb.button(text="💫 Ставка за звезды", callback_data="star_bet")
+    kb.button(text="💸 Ставка // крипто бот", callback_data="crypto_bet")
+    kb.button(text="💫 Ставка // звезды", callback_data="star_bet")
+    kb.button(text="⚡ Администрция", url="https://t.me/AsartiaCasino/137")
+    kb.button(text="❓ Как сделать ставку", url="t.me/AsartiaCasino/40")
     kb.adjust(2)  
 
     await callback.message.answer(
-        "<i>😋 Выберите опцию ниже:</i>",
+        "<pre>😋 Выбери опцию ниже:</pre>",
         reply_markup=kb.as_markup(),
         parse_mode='html'
     )
@@ -208,7 +216,7 @@ async def choose_bet_type(callback: types.CallbackQuery):
 async def crypto_bet(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
     await callback.message.answer(
-        "<i>💵 Введи сумму ставки в цыфрах:</i>\n<b>Минимальная сумма ставки — <u>0.1 $</u></b>",
+        "<pre>💵 Введи сумму ставки в цыфрах:</pre>\n<b>❗ Минимальная сумма ставки — <u>0.1 $</u></b>",
         parse_mode='html'
     )
     await state.set_state(BetStates.crypto_bet)
@@ -257,7 +265,14 @@ async def check_payment(invoice_url: str, message: Message, user_id):
                         builder3 = InlineKeyboardBuilder()
                         builder3.button(text="💰 Забрать чек", url=check.bot_check_url)
                         win_markup = builder3.as_markup()
-                        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
+                        await bot.send_message(chat_id=message.chat.id, text=f"""<b>━━━━━━━━━━━━━━━
+🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>
+💵 Сумма выигрыша: <u>{win}</u>
+
+<pre>Фортуна на твоей стороне, возвращайся за новым выигрышем. Ваш выигрыш в личных сообщениях!</pre>
+
+<b><a href="https://t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40">Как сделать ставку</a></b>
+""", 
                                                reply_to_message_id=sent_msg.message_id, 
                                                parse_mode='html', 
                                                disable_web_page_preview=True,
@@ -269,20 +284,41 @@ async def check_payment(invoice_url: str, message: Message, user_id):
                         
                         await bot.send_message(
     chat_id='@AsartiaCasino',
-    text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. <b>Ваш выигрыш в личных сообщениях!</b></i></pre></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+    text=f"""<b>━━━━━━━━━━━━━━━
+🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>
+💵 Сумма выигрыша: <u>{win}</u>
+
+<pre>Фортуна на твоей стороне, возвращайся за новым выигрышем. Ваш выигрыш в личных сообщениях!</pre>
+
+<b><a href="https://t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40">Как сделать ставку</a></b>
+""",
     parse_mode='html',
     disable_web_page_preview=True
 )
 
                     else:
                         print(f"playy после броска: {playy}")
-                        await bot.send_message(chat_id=message.chat.id, text=f'━━━━━━━━━━━━━━━\n<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>\n<i><pre>Желаем удачи в следующих играх, не опускайте руки!</pre></i>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
+                        await bot.send_message(chat_id=message.chat.id, text=f"""━━━━━━━━━━━━━━━
+<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>
+
+<pre>Желаем удачи в следующих играх, не опускайте руки!</pre>
+
+<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40">Как сделать ставку</a></b>
+""", reply_to_message_id=sent_msg.message_id,
+parse_mode='html',
+disable_web_page_preview=True)
                         
                 
                         
                         
                         await bot.send_message(chat_id='@AsartiaCasino', 
-                        text=f'━━━━━━━━━━━━━━━\n<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>\n<i><pre>Желаем удачи в следующих играх, не опускайте руки!</pre></i>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
+                        text=f"""━━━━━━━━━━━━━━━
+<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>
+
+<pre>Желаем удачи в следующих играх, не опускайте руки!</pre>
+
+<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40">Как сделать ставку</a></b>
+""", 
                         parse_mode='html', 
                         disable_web_page_preview=True)
 
@@ -315,7 +351,7 @@ async def handle_crypto_bet(message: Message, state: FSMContext):
         kb.adjust(2)
 
         await message.answer(
-            "<i>🔮 Выберите, что выпадет на кубике:</i>",
+            "<pre>🔮 Выберите, что выпадет на кубике:</pre>",
             reply_markup=kb.as_markup(),
             parse_mode='html'
         )
@@ -340,8 +376,8 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                     win_amount = amount * 1.5
 
                     await message.answer(
-                        f"<b>✅ Ставка принята!</b>\n<i>Сумма: <u>{amount} $</u></i>\n<i>Выбор: {'Больше' if prediction == 'high' else 'Меньше'}</i>",
-                        parse_mode='html'
+                        f'<pre>💥 Ставка по криптоботу успешно принята!</pre>\n<i>Игрок: <a href="{hrefka}">{username}</a>\n Сумма: <u>{amount} $</u></i>\n<i>Выбор: {'Больше' if prediction == 'high' else 'Меньше'}</i>',
+                        parse_mode='html', disable_web_page_preview=True
                     )
 
                     await asyncio.sleep(1)
@@ -360,15 +396,30 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                         win_kb.button(text="💰 Забрать выигрыш", url=check.bot_check_url)
                         await bot.send_message(
                             chat_id=message.chat.id,
-                            text=f"🏆 <b><a href='{hrefka}'>{username}</a>, вы выиграли!</b>\n<i>Сумма выигрыша: {win_amount:.2f} $</i>",
+                            text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
                             reply_markup=win_kb.as_markup(),
-                            parse_mode='html'
+                            parse_mode='html',
+                            disable_web_page_preview=True
                         )
+                        await bot.send_message(
+                            chat_id='@AsartiaCasino',
+                            text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Ваш выигрыш в личных сообщениях!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+                            parse_mode='html',
+                            disable_web_page_preview=True
+                        )
+                    
                     else:
                         await bot.send_message(
                             chat_id=message.chat.id,
-                            text=f"❌ <b><a href='{hrefka}'>{username}</a>, вы проиграли.</b>\n<i>Удачи в следующий раз!</i>",
-                            parse_mode='html'
+                            text=f'━━━━━━━━━━━━━━━\n<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>\n<i><pre>Желаем удачи в следующих играх, не опускайте руки!</pre></i>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+                            parse_mode='html',
+                            disable_web_page_preview=True
+                        )
+                        await bot.send_message(
+                            chat_id='@AsartiaCasino',
+                            text=f'━━━━━━━━━━━━━━━\n<b>❌ <a href="{hrefka}">{username}</a>, Вы проиграли!</b>\n<i><pre>Желаем удачи в следующих играх, не опускайте руки!</pre></i>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+                            parse_mode='html',
+                            disable_web_page_preview=True
                         )
                     return
             await asyncio.sleep(5)
@@ -380,7 +431,7 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
 
 @dp.callback_query(F.data.startswith("prediction_"))
 async def handle_prediction(callback: CallbackQuery, state: FSMContext):
-    prediction = callback.data.split("_")[1]  # high или low
+    prediction = callback.data.split("_")[1]  
     data = await state.get_data()
     amount = data['bet_amount']
 
