@@ -321,7 +321,7 @@ async def handle_crypto_bet(message: Message, state: FSMContext):
 
         await message.answer(f"<i>💰 Оплатите ставку на сумму <u>{amount} $</u></i>", reply_markup=kb.as_markup(), parse_mode='html')
 
-        asyncio.create_task(check_payment(invoice_url, message))
+        asyncio.create_task(check_payment(invoice_url, message, user_id))
 
         await state.clear()
     except ValueError:
