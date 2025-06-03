@@ -212,13 +212,12 @@ async def crypto_bet(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(BetStates.crypto_bet)
 
 
-async def check_payment(invoice_url: str, message: Message):
+async def check_payment(invoice_url: str, message: Message, user_id):
     user = message.from_user
     username = user.full_name
     username1 = user.username or user.id
     hrefka = f't.me/{username1}'
     playy = random.randint(1, 2)
-    user_id = message.from_user.id
 
     try:
         while True:
@@ -251,12 +250,12 @@ async def check_payment(invoice_url: str, message: Message):
                         check = await send_client.create_check(
             asset="USDT",
             amount=win,
-            pin_to_user_id=user.id
+            pin_to_user_id=user_id
                     )
                         builder3 = InlineKeyboardBuilder()
                         builder3.button(text="💰 Забрать чек", url=check.bot_check_url)
                         win_markup = builder3.as_markup()
-                        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<i><pre>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
+                        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
                                                reply_to_message_id=sent_msg.message_id, 
                                                parse_mode='html', 
                                                disable_web_page_preview=True,
@@ -268,7 +267,7 @@ async def check_payment(invoice_url: str, message: Message):
                         
                         await bot.send_message(
     chat_id='@AsartiaCasino',
-    text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<i><pre>Фортуна на твоей стороне, возвращайся за новым выигрышем. <b>Ваш выигрыш в личных сообщениях!</b></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+    text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. <b>Ваш выигрыш в личных сообщениях!</b></i></pre></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
     parse_mode='html',
     disable_web_page_preview=True
 )
@@ -406,8 +405,8 @@ disable_web_page_preview=True)
         await bot.send_dice(chat_id='@AsartiaCasino', emoji="🎲")
         await asyncio.sleep(1)
         if play == 1:
-            await bot.send_message(chat_id='@AsartiaCasino', text=f'━━━━━━━━━━━━━━━\n<b>🏆 <a href="{hrefka}">{username}</a>, Вы выиграли! </b>\n<i><pre>Фортуна на твоей стороне, возвращайся за новым выигрышем. <b>Выигрыш отправил тебе в личные сообщения</b></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
-            await bot.send_message(chat_id=message.chat.id, text=f'━━━━━━━━━━━━━━━\n<b>🏆 <a href="{hrefka}">{username}</a>, Вы выиграли! </b>\n<i><pre>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
+            await bot.send_message(chat_id='@AsartiaCasino', text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем. Подарок отправил тебе в личные сообщения</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
+            await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', reply_to_message_id=sent_msg.message_id, parse_mode='html', disable_web_page_preview=True)
             if stars < 25:
                 await bot(SendGift(
         gift_id=random.choice(['5170145012310081615', '5170233102089322756']),
@@ -430,6 +429,7 @@ disable_web_page_preview=True)
             await bot.send_message(chat_id='@AsartiaCasino', text=f'━━━━━━━━━━━━━━━\n<b>💥 <a href="{hrefka}">{username}</a>, Вы проиграли!\n</b><pre><i>Желаем удачи в следующих играх, не опускайте руки!</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', parse_mode='html', disable_web_page_preview=True)
     else:
         pass
+
 
 
 
