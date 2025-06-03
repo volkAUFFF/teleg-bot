@@ -467,7 +467,7 @@ async def handle_prediction(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "star_bet")
 async def star_bet(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    await callback.message.answer("<i>✨ Введи сумму ставки в цыфрах:</i>\n<b>Минимальная сумма ставки — <u>20 звезд</u></b>", parse_mode='html')
+    await callback.message.answer("<pre>✨ Введи сумму ставки в цыфрах:</pre>\n<b>❗ Минимальная сумма ставки — <u>15 звезд</u></b>>", parse_mode='html')
     await state.set_state(BetStates.star_bet)
 
 
@@ -480,8 +480,8 @@ async def pre_checkout(pre_checkout_query: PreCheckoutQuery):
 async def handle_star_bet(message: Message, state: FSMContext):
     try:
         stars = int(message.text)
-        if stars < 20:
-            await message.answer("<b>❗Минимальная сумма ставки — <u>20 звезд</u></b>", parse_mode='html')
+        if stars < 15:
+            await message.answer("<b>❗Минимальная сумма ставки — <u>15 звезд</u></b>", parse_mode='html')
             return
         elif stars > 50: 
             await message.answer("<b>❗Максимальная сумма ставки — <u>50 звезд</u></b>", parse_mode='html')
