@@ -227,7 +227,7 @@ async def check_payment(invoice_url: str, message: Message, user_id):
     username = user.full_name
     username1 = user.username or user.id
     hrefka = f't.me/{username1}'
-    playy = random.randint(1, 2)
+    playy = random.randint(1, 300)
 
     try:
         while True:
@@ -467,7 +467,7 @@ async def handle_prediction(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "star_bet")
 async def star_bet(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    await callback.message.answer("<pre>✨ Введи сумму ставки в цыфрах:</pre>\n<b>❗ Минимальная сумма ставки — <u>15 звезд</u></b>>", parse_mode='html')
+    await callback.message.answer("<pre>✨ Введи сумму ставки в цыфрах:</pre>\n<b>❗ Минимальная сумма ставки — <u>15 звезд</u></b>", parse_mode='html')
     await state.set_state(BetStates.star_bet)
 
 
