@@ -255,7 +255,7 @@ async def check_payment(invoice_url: str, message: Message, user_id):
                         builder3 = InlineKeyboardBuilder()
                         builder3.button(text="💰 Забрать чек", url=check.bot_check_url)
                         win_markup = builder3.as_markup()
-                        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем.</i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
+                        await bot.send_message(chat_id=message.chat.id, text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!</b>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<b><a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>', 
                                                reply_to_message_id=sent_msg.message_id, 
                                                parse_mode='html', 
                                                disable_web_page_preview=True,
