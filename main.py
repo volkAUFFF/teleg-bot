@@ -320,7 +320,7 @@ async def handle_crypto_bet(message: Message, state: FSMContext):
         kb.adjust(1) 
 
         await message.answer(f"<i>💰 Оплатите ставку на сумму <u>{amount} $</u></i>", reply_markup=kb.as_markup(), parse_mode='html')
-
+        user_id = message.from_user.id  # Получаем user_id здесь
         asyncio.create_task(check_payment(invoice_url, message, user_id))
 
         await state.clear()
