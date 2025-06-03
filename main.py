@@ -376,9 +376,9 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                     win_amount = amount * 1.5
 
                     await message.answer(
-                        f'<pre>💥 Ставка по криптоботу успешно принята!</pre>\n<i>Игрок: <a href="{hrefka}">{username}</a>\n Сумма: <u>{amount} $</u></i>\n<i>Выбор: {"Больше" if prediction == "high" else "Меньше"}</i>',
-                        parse_mode='html', disable_web_page_preview=True
-                    )
+    f"<pre>💥 Ставка по криптоботу успешно принята!</pre>\n<i>Игрок: <a href=\"{hrefka}\">{username}</a>\n Сумма: <u>{amount} $</u></i>\n<i>Выбор: {'Больше' if prediction == 'high' else 'Меньше'}</i>",
+    parse_mode='html', disable_web_page_preview=True
+)
 
                     await asyncio.sleep(1)
                     dice = await bot.send_dice(chat_id=message.chat.id, emoji="🎲")
@@ -396,7 +396,7 @@ async def check_random_payment(invoice_url: str, message: Message, user_id: int,
                         win_kb.button(text="💰 Забрать выигрыш", url=check.bot_check_url)
                         await bot.send_message(
                             chat_id=message.chat.id,
-                            text=f'<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>',
+                            text=f"<b>━━━━━━━━━━━━━━━\n🏆 <a href="{hrefka}">{username}</a>, Вы выиграли!\nСумма выигрыша: <u>{win_amount:.2f} $</u>\n<pre><i>Фортуна на твоей стороне, возвращайся за новым выигрышем!</i></pre></i></pre>\n\n<a href="t.me/AsartiaCasino">⚡ Канал с новостями</a> | <a href="https://t.me/AsartiaCasino/40"> Как сделать ставку</a></b>",
                             reply_markup=win_kb.as_markup(),
                             parse_mode='html',
                             disable_web_page_preview=True
