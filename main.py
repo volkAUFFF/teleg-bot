@@ -546,17 +546,17 @@ disable_web_page_preview=True)
            
             if 14 < stars < 26:
                 await bot(SendGift(
-        gift_id=5170145012310081615,
+        gift_id=str(5170145012310081615),
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
             elif 24 < stars < 49:
                 await bot(SendGift(
-        gift_id=5170250947678437525,
+        gift_id=str(5170250947678437525),
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
             elif stars > 50:
                 await bot(SendGift(
-        gift_id=5170144170496491616,
+        gift_id=str(5170144170496491616),
         user_id=user_id,
         text="Поздравляю, ты выиграл! Спасибо за пользование ❤️"))
 
