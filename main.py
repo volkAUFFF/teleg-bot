@@ -206,7 +206,6 @@ menu = ReplyKeyboardMarkup(
 # ========= BOT =========
 
 
-
 @dp.message(Command('start'))
 async def start_cmd(message: types.Message, state: FSMContext = None):
     username = message.from_user.username
@@ -215,6 +214,23 @@ async def start_cmd(message: types.Message, state: FSMContext = None):
     fullname = f'<a href="t.me/{username}">{name}</a>'
     moscow_time = datetime.now(pytz.timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")
 
+    # === Проверка подписки ===
+    try:
+        member = await bot.get_chat_member('@LunaBetChannel', user_id)
+        if member.status == 'left':
+            await message.answer(
+                f"<b>👋 {fullname}, чтобы пользоваться ботом, сначала подпишитесь на наш канал: @LunaBetChannel\n</b>"
+                f"После этого снова введите /start.",
+                parse_mode='HTML'
+            )
+            return
+        
+    except Exception as e:
+        logging.error(f"Ошибка при проверке подписки: {e}")
+        await message.answer("⚠️ Не удалось проверить подписку. Попробуйте позже.", parse_mode='html')
+        return
+
+    # === Продолжение если подписан ===
     cursor.execute("SELECT user_id FROM users WHERE user_id = ?", (user_id,))
     exists = cursor.fetchone()
     if state:
@@ -222,13 +238,12 @@ async def start_cmd(message: types.Message, state: FSMContext = None):
 
     if not exists:
         cursor.execute(
-        "INSERT INTO users (user_id, username, plays, wins, loses, reg_date) VALUES (?, ?, 0, 0, 0, ?)",
-        (user_id, username, moscow_time)
-    )
-    connect.commit()
+            "INSERT INTO users (user_id, username, plays, wins, loses, reg_date) VALUES (?, ?, 0, 0, 0, ?)",
+            (user_id, username, moscow_time)
+        )
+        connect.commit()
 
-    
-    photo_url = "https://i.postimg.cc/3rDnXD22/image.jpg" 
+    photo_url = "https://i.postimg.cc/3rDnXD22/image.jpg"
     cursor.execute("SELECT reg_date FROM users WHERE user_id = ?", (user_id,))
     reg_date = cursor.fetchone()[0]
 
@@ -242,7 +257,9 @@ async def start_cmd(message: types.Message, state: FSMContext = None):
 
 <i>Чтобы сделать ставку, ОБЯЗАТЕЛЬНО прочти <b>{this}</b></i>
 """,
-    parse_mode="HTML", reply_markup=menu)
+        parse_mode="HTML",
+        reply_markup=menu
+    )
 
 
 
