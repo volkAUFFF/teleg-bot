@@ -385,11 +385,7 @@ async def check_payments(post: types.Message):
     play.button(text="🕹️ Сделать ставку", url='t.me/send?start=IVrfxN9IrHq8')
     play_markup = play.as_markup()
 
-    # Логирование только если пост из целевого канала
-    if post.chat.id == LOGS_CHANNEL_ID:
-        logging.info(f"Post from target channel {LOGS_CHANNEL_ID}. Text: {post.text}")
-
-    # Обработка выполняется для всех сообщений
+    # УБРАЛ ПРОВЕРКУ НА КАНАЛ (ВАЖНО!)
     text_with_formatting = post.html_text or ""
     raw_lines = (post.text or "").splitlines()
     comment = "Без комментария"
@@ -404,7 +400,7 @@ async def check_payments(post: types.Message):
         r'\s*(?:<a[^>]*?>)?отправил\(а\)(?:</a>)?'
         r'.*?'
         r'(?:<b><tg-emoji[^>]*?>.*?<\/tg-emoji>)?'
-        r'(?:<b>)?([\d.,]+)\sUSDT(?:</b>)?',
+        r'(?:<b>)?([\d.,]+)\s*USDT(?:</b>)?',
         text_with_formatting,
         re.IGNORECASE
     )
@@ -434,85 +430,74 @@ async def check_payments(post: types.Message):
             cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
             connect.commit()
 
-            # Отправка уведомления о принятии ставки в игровой канал
+            # ОТПРАВКА В КАНАЛ (ПРОБУЕМ, НО НЕ ВАЖНО ЕСЛИ ОШИБКА)
             try:
-                await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
-                
+                await bot.send_message(
+                    chat_id=int(-1002744283282),
+                    text=f"""<b>💸 Ставка успешно принята!</b>
+                    
 <blockquote>| Игрок: {user_profile_link}</blockquote>
 
 <blockquote>| Сумма ставки: {amount}$</blockquote>
 
 <blockquote>| Исход ставки: {comment}</blockquote>
 """, parse_mode='html')
-            except Exception as e:
-                logging.error(f"Ошибка при отправке в игровой канал: {e}")
+            except:
+                pass
 
             if playing == 1:
                 check = await cp.create_check(amount=win_amount, asset="USDT", pin_to_user_id=int(user_id))
 
                 cursor.execute("UPDATE users SET wins = wins + 1 WHERE user_id = ?", (user_id,))
-
-                # Отправка уведомления о победе в игровой канал
-                try:
-                    await bot.send_photo(
-                        chat_id=int(-1002744283282),
-                        photo=PHOTO_WIN_URL,
-                        caption=f"""
-[⚡️] <b>Победа! Выпало значение «{playing}».</b>
-
-<blockquote>Сумма выигрыша: <b>{win_amount} $</b>
-Ваш выигрыш был отправлен вам в личные сообщения! 🎉</blockquote>
-
-<i>Поздравляем вас, желаем удачи в следующих успешных ставках</i>
-""",
-                        parse_mode="HTML",
-                        reply_markup=play_markup
-                    )
-                except Exception as e:
-                    logging.error(f"Ошибка при отправке победы в игровой канал: {e}")
+                connect.commit()
 
                 builder = InlineKeyboardBuilder()
                 builder.button(text="💸 Забрать приз", url=check.bot_check_url)
                 reply_markup = builder.as_markup()
 
-                # Отправка выигрыша пользователю (обязательно)
-                try:
-                    await bot.send_photo(
-                        chat_id=user_id,
-                        photo=PHOTO_WIN_URL,
-                        caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
-                        
-<i>⚡ Ваш выигрыш ниже:</i>""",
-                        reply_markup=reply_markup,
-                        parse_mode="HTML"
-                    )
-                except Exception as e:
-                    logging.error(f"Ошибка при отправке выигрыша пользователю {user_id}: {e}")
+                await bot.send_photo(
+                    chat_id=user_id,
+                    photo=PHOTO_WIN_URL,
+                    caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
 
+<i>⚡ Ваш выигрыш ниже:</i>""",
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
+                await bot.send_photo(
+                    chat_id=int(-1002744283282),
+                    photo=PHOTO_WIN_URL,
+                    caption=f"""[⚡️] <b>Победа! Выпало значение «{playing}».</b>
+
+<blockquote>Сумма выигрыша: <b>{win_amount} $</b>
+Ваш выигрыш был отправлен вам в личные сообщения! 🎉</blockquote>
+
+<i>Поздравляем вас, желаем удачи в следующих успешных ставках</i>
+                        """,
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
+                
             else:
                 cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
+                connect.commit()
 
-                # Отправка уведомления о проигрыше в игровой канал
-                try:
-                    await bot.send_photo(
-                        chat_id=int(-1002744283282),
-                        photo=PHOTO_LOSE_URL,
-                        caption=f"""
+                await bot.send_photo(
+                    chat_id=int(-1002744283282),
+                    photo=PHOTO_LOSE_URL,
+                    caption="""
 <b>⚡️ Проигрыш — это не конец, а начало нового шанса. Вам выпало значение «{playing}»</b>
 
 <blockquote>Не забывайте, даже лучшие спортсмены иногда падают.
 Каждое поражение — это шаг к большой победе, которой стоит ждать.</blockquote>
 
 <i>Вперёд, к новым вершинам! Ваша победа уже близка! 💥</i>
-""",
-                        parse_mode="HTML",
-                        reply_markup=play_markup
-                    )
-                except Exception as e:
-                    logging.error(f"Ошибка при отправке проигрыша в игровой канал: {e}")
+                        """,
+                    parse_mode="HTML"
+                )
 
         except Exception as e:
-            logging.error(f"Ошибка при обработке сообщения: {e}", exc_info=True)
+            logging.error(f"Ошибка: {e}")
 
 
 
