@@ -434,17 +434,7 @@ async def check_payments(post: types.Message):
                 cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
                 connect.commit()
 
-                await post.reply(
-                    f"""<b>💸 Ставка успешно принята!</b>
-
-<blockquote>| Игрок: {user_profile_link}</blockquote>
-
-<blockquote>| Сумма ставки: {amount}$</blockquote>
-
-<blockquote>| Исход ставки: {comment}</blockquote>
-                    """,
-                    parse_mode="HTML"
-                )
+                
                 await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
 
 <blockquote>| Игрок: {user_profile_link}</blockquote>
