@@ -20,6 +20,51 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import F
 import asyncio
+import aiohttp
+from aiogram import Bot, Dispatcher, types
+from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command, CommandStart
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice, Message
+from aiogram.utils.keyboard import  InlineKeyboardBuilder
+from aiosend import CryptoPay
+from aiogram import F
+import asyncio
+import logging
+import aiohttp
+import sys
+import asyncio
+from contextlib import suppress
+import logging
+import sys
+import os
+from os import getenv
+import sqlite3
+import random
+import re
+import datetime
+import time
+from aiogram.exceptions import TelegramBadRequest
+from typing import Any
+from aiogram import types
+from aiogram import Router
+from aiogram import Bot, Dispatcher, F   
+from aiogram.filters import CommandStart, Command, CommandObject
+from aiogram.types import Message, CallbackQuery
+from aiogram.types import PreCheckoutQuery, LabeledPrice
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton , InlineKeyboardMarkup , InlineKeyboardButton , CallbackQuery
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.enums import ParseMode
+from datetime import datetime, timedelta
+from aiogram.types import ChatPermissions
+from aiogram.enums import ChatType
+from aiogram.methods.send_gift import SendGift
+import asyncio
+from aiohttp import web
+from aiogram import Bot, Dispatcher
+from aiogram.types import Message
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+import web
 
 
 
