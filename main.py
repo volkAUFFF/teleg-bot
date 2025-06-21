@@ -64,7 +64,6 @@ from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
-import web
 
 
 
