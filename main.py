@@ -377,6 +377,7 @@ async def main_hand(message: types.Message):
 @dp.channel_post()
 async def check_payments(post: types.Message):
     playing = random.randint(1, 2)
+
     PHOTO_WIN_URL = 'https://i.postimg.cc/0N7Ld6Rf/image.jpg'
     PHOTO_LOSE_URL = 'https://i.postimg.cc/T1NSYggR/image.jpg'
 
@@ -384,122 +385,113 @@ async def check_payments(post: types.Message):
     play.button(text="🕹️ Сделать ставку", url='t.me/send?start=IVrfxN9IrHq8')
     play_markup = play.as_markup()
 
-
     if post.chat.id == LOGS_CHANNEL_ID:
         logging.info(f"Post from target channel {LOGS_CHANNEL_ID}. Text: {post.text}")
 
-        text_with_formatting = post.html_text or ""
-        raw_lines = (post.text or "").splitlines()
-        comment = "Без комментария"
+    # 👇 обработка выполняется ВСЕГДА, независимо от LOGS_CHANNEL_ID
+    text_with_formatting = post.html_text or ""
+    raw_lines = (post.text or "").splitlines()
+    comment = "Без комментария"
 
-        for line in raw_lines:
-            if "💬" in line:
-                comment = line.replace("💬", "").strip()
-                break
+    for line in raw_lines:
+        if "💬" in line:
+            comment = line.replace("💬", "").strip()
+            break
 
-        match = re.search(
-            r'<a href="tg://user\?id=(\d+)">\s*(.*?)\s*</a>'
-            r'\s*(?:<a[^>]*?>)?отправил\(а\)(?:</a>)?'
-            r'.*?'
-            r'(?:<b><tg-emoji[^>]*?>.*?<\/tg-emoji>)?'
-            r'(?:<b>)?([\d.,]+)\sUSDT(?:</b>)?',
-            text_with_formatting,
-            re.IGNORECASE
-        )
+    match = re.search(
+        r'<a href="tg://user\?id=(\d+)">\s*(.*?)\s*</a>'
+        r'\s*(?:<a[^>]*?>)?отправил\(а\)(?:</a>)?'
+        r'.*?'
+        r'(?:<b><tg-emoji[^>]*?>.*?<\/tg-emoji>)?'
+        r'(?:<b>)?([\d.,]+)\sUSDT(?:</b>)?',
+        text_with_formatting,
+        re.IGNORECASE
+    )
 
-        if match:
-            try:
-                user_id = match.group(1)
-                displayed_nick_raw = match.group(2)
-                amount = float(match.group(3).replace(',', '.'))
+    if match:
+        try:
+            user_id = match.group(1)
+            displayed_nick_raw = match.group(2)
+            amount = float(match.group(3).replace(',', '.'))
 
-                displayed_nick_clean = re.sub(r'<[^>]*?>', '', displayed_nick_raw).strip()
-                user_profile_link = f'<a href="tg://user?id={user_id}">{displayed_nick_clean}</a>'
+            displayed_nick_clean = re.sub(r'<[^>]*?>', '', displayed_nick_raw).strip()
+            user_profile_link = f'<a href="tg://user?id={user_id}">{displayed_nick_clean}</a>'
 
-                cp = CryptoPay("417594:AAei8HxkjFN6D6GWKeB9f46mK6Q3dghVDAH", MAINNET)
+            cp = CryptoPay("417594:AAei8HxkjFN6D6GWKeB9f46mK6Q3dghVDAH", MAINNET)
 
-                # Коэффициент выигрыша
-                if comment in ['орел', 'решка']:
-                    multiplier = 1.8
-                elif comment in ['больше', 'меньше']:
-                    multiplier = 1.5
-                elif comment in ['чет', 'нечет']:
-                    multiplier = 1.5
-                else:
-                    multiplier = 1
+            if comment in ['орел', 'решка']:
+                multiplier = 1.8
+            elif comment in ['больше', 'меньше']:
+                multiplier = 1.5
+            elif comment in ['чет', 'нечет']:
+                multiplier = 1.5
+            else:
+                multiplier = 1
 
-                win_amount = round(amount * multiplier, 2)
+            win_amount = round(amount * multiplier, 2)
 
-                # Обновление статистики
-                cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
-                connect.commit()
+            cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
+            connect.commit()
 
-                
-                await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
-
+            await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
 <blockquote>| Игрок: {user_profile_link}</blockquote>
-
 <blockquote>| Сумма ставки: {amount}$</blockquote>
-
 <blockquote>| Исход ставки: {comment}</blockquote>
-                    """, parse_mode='html')
+""", parse_mode='html')
 
-                if playing == 1:
-                    # Победа
-                    check = await cp.create_check(
-                        amount=win_amount,
-                        asset="USDT",
-                        pin_to_user_id=int(user_id)
-                    )
-                    cursor.execute("UPDATE users SET wins = wins + 1 WHERE user_id = ?", (user_id,))
-                    await bot.send_photo(
-                        chat_id=int(-1002744283282),
-                        photo=PHOTO_WIN_URL,
-                        caption=f"""
+            if playing == 1:
+                check = await cp.create_check(amount=win_amount, asset="USDT", pin_to_user_id=int(user_id))
+
+                cursor.execute("UPDATE users SET wins = wins + 1 WHERE user_id = ?", (user_id,))
+
+                await bot.send_photo(
+                    chat_id=int(-1002744283282),
+                    photo=PHOTO_WIN_URL,
+                    caption=f"""
 [⚡️] <b>Победа! Выпало значение «{playing}».</b>
 
 <blockquote>Сумма выигрыша: <b>{win_amount} $</b>
 Ваш выигрыш был отправлен вам в личные сообщения! 🎉</blockquote>
 
 <i>Поздравляем вас, желаем удачи в следующих успешных ставках</i>
-                        """,
-                        parse_mode="HTML", reply_markup=play_markup
-                    )
-                    builder = InlineKeyboardBuilder()
-                    builder.button(text="💸 Забрать приз", url=check.bot_check_url)
-                    reply_markup = builder.as_markup()
+""",
+                    parse_mode="HTML",
+                    reply_markup=play_markup
+                )
 
-                    await bot.send_photo(
-                        chat_id=user_id,
-                        photo=PHOTO_WIN_URL,
-                        caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
+                builder = InlineKeyboardBuilder()
+                builder.button(text="💸 Забрать приз", url=check.bot_check_url)
+                reply_markup = builder.as_markup()
 
+                await bot.send_photo(
+                    chat_id=user_id,
+                    photo=PHOTO_WIN_URL,
+                    caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
 <i>⚡ Ваш выигрыш ниже:</i>""",
-                        reply_markup=reply_markup,
-                        parse_mode="HTML"
-                    )
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
+            else:
+                cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
 
-                else:
-                    # Проигрыш
-                    cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
-
-
-                    await bot.send_photo(
-                        chat_id=int(-1002744283282),
-                        photo=PHOTO_LOSE_URL,
-                        caption=f"""
+                await bot.send_photo(
+                    chat_id=int(-1002744283282),
+                    photo=PHOTO_LOSE_URL,
+                    caption=f"""
 <b>⚡️ Проигрыш — это не конец, а начало нового шанса. Вам выпало значение «{playing}»</b>
 
 <blockquote>Не забывайте, даже лучшие спортсмены иногда падают.
 Каждое поражение — это шаг к большой победе, которой стоит ждать.</blockquote>
 
 <i>Вперёд, к новым вершинам! Ваша победа уже близка! 💥</i>
-                        """,
-                        parse_mode="HTML", reply_markup=play_markup
-                    )
+""",
+                    parse_mode="HTML",
+                    reply_markup=play_markup
+                )
 
-            except Exception as e:
-                logging.error(f"Ошибка при обработке сообщения: {e}", exc_info=True)
+        except Exception as e:
+            logging.error(f"Ошибка при обработке сообщения: {e}", exc_info=True)
+
 
 
 
