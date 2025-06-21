@@ -385,20 +385,22 @@ async def check_payments(post: types.Message):
     play.button(text="🕹️ Сделать ставку", url='t.me/send?start=IVrfxN9IrHq8')
     play_markup = play.as_markup()
 
-    # Всегда выполняем обработку, независимо от канала с логами
+    # Логируем все сообщения для диагностики
+    logging.info(f"Получено сообщение: {post.text}")
+    
+    # Проверяем, есть ли текст в сообщении и парсим его
     text_with_formatting = post.html_text or ""
     raw_lines = (post.text or "").splitlines()
+    logging.info(f"Текст с форматированием: {text_with_formatting}")
+    logging.info(f"Разделенные строки текста: {raw_lines}")
+    
     comment = "Без комментария"
-
     for line in raw_lines:
         if "💬" in line:
             comment = line.replace("💬", "").strip()
             break
+    logging.info(f"Комментарий: {comment}")
 
-    # Логируем весь текст, чтобы проверить, что приходит
-    logging.info(f"Обработано сообщение: {post.text}")
-    logging.info(f"Текст с форматированием: {text_with_formatting}")
-    
     match = re.search(
         r'<a href="tg://user\?id=(\d+)">\s*(.*?)\s*</a>'
         r'\s*(?:<a[^>]*?>)?отправил\(а\)(?:</a>)?'
@@ -409,7 +411,12 @@ async def check_payments(post: types.Message):
         re.IGNORECASE
     )
 
-    # Если парсинг успешен
+    # Логируем результат парсинга
+    if match:
+        logging.info(f"Парсинг успешен. Данные: {match.groups()}")
+    else:
+        logging.warning("Парсинг не дал результатов.")
+
     if match:
         try:
             user_id = match.group(1)
@@ -421,7 +428,6 @@ async def check_payments(post: types.Message):
 
             cp = CryptoPay("417594:AAei8HxkjFN6D6GWKeB9f46mK6Q3dghVDAH", MAINNET)
 
-            # Проверяем комментарий и устанавливаем множитель
             if comment in ['орел', 'решка']:
                 multiplier = 1.8
             elif comment in ['больше', 'меньше']:
@@ -441,11 +447,8 @@ async def check_payments(post: types.Message):
 
             # Отправляем сообщение об успешной ставке
             await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
-            
 <blockquote>| Игрок: {user_profile_link}</blockquote>
-
 <blockquote>| Сумма ставки: {amount}$</blockquote>
-
 <blockquote>| Исход ставки: {comment}</blockquote>
 """, parse_mode='html')
 
@@ -501,10 +504,8 @@ async def check_payments(post: types.Message):
 
         except Exception as e:
             logging.error(f"Ошибка при обработке сообщения: {e}", exc_info=True)
-
     else:
         logging.warning("Не удалось распарсить сообщение для ставки.")
-
 
 
 
