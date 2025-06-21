@@ -19,7 +19,6 @@ import pytz
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import F
-from telethon import TelegramClient, events, Button
 import asyncio
 
 
