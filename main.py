@@ -374,60 +374,53 @@ async def main_hand(message: types.Message):
 
 
 
+# Константы
+PHOTO_WIN_URL = 'https://i.postimg.cc/0N7Ld6Rf/image.jpg'
+PHOTO_LOSE_URL = 'https://i.postimg.cc/T1NSYggR/image.jpg'
+
+# Обработчик сообщений из канала
 @dp.channel_post()
 async def check_payments(post: types.Message):
-    playing = random.randint(1, 2)
-
-    PHOTO_WIN_URL = 'https://i.postimg.cc/0N7Ld6Rf/image.jpg'
-    PHOTO_LOSE_URL = 'https://i.postimg.cc/T1NSYggR/image.jpg'
-
-    play = InlineKeyboardBuilder()
-    play.button(text="🕹️ Сделать ставку", url='t.me/send?start=IVrfxN9IrHq8')
-    play_markup = play.as_markup()
-
-    # Логируем все сообщения для диагностики
     logging.info(f"Получено сообщение: {post.text}")
-    
-    # Проверяем, есть ли текст в сообщении и парсим его
-    text_with_formatting = post.html_text or ""
+    logging.info(f"HTML сообщение: {post.html_text}")
+
+    playing = random.randint(1, 2)
     raw_lines = (post.text or "").splitlines()
-    logging.info(f"Текст с форматированием: {text_with_formatting}")
-    logging.info(f"Разделенные строки текста: {raw_lines}")
-    
     comment = "Без комментария"
+
     for line in raw_lines:
         if "💬" in line:
             comment = line.replace("💬", "").strip()
             break
-    logging.info(f"Комментарий: {comment}")
 
+    # Пример: "саморезка отправил(а) 🪙 0.15 USDT"
     match = re.search(
-        r'<a href="tg://user\?id=(\d+)">\s*(.*?)\s*</a>'
-        r'\s*(?:<a[^>]*?>)?отправил\(а\)(?:</a>)?'
-        r'.*?'
-        r'(?:<b><tg-emoji[^>]*?>.*?<\/tg-emoji>)?'
-        r'(?:<b>)?([\d.,]+)\sUSDT(?:</b>)?',
-        text_with_formatting,
+        r'(\S+)\s+отправил\(а\)\s+🪙\s+([\d.,]+)\s+USDT',
+        post.text or "",
         re.IGNORECASE
     )
 
-    # Логируем результат парсинга
-    if match:
-        logging.info(f"Парсинг успешен. Данные: {match.groups()}")
-    else:
-        logging.warning("Парсинг не дал результатов.")
-
     if match:
         try:
-            user_id = match.group(1)
-            displayed_nick_raw = match.group(2)
-            amount = float(match.group(3).replace(',', '.'))
+            displayed_nick = match.group(1)
+            amount = float(match.group(2).replace(',', '.'))
 
-            displayed_nick_clean = re.sub(r'<[^>]*?>', '', displayed_nick_raw).strip()
-            user_profile_link = f'<a href="tg://user?id={user_id}">{displayed_nick_clean}</a>'
+            # user_id ищем через HTML, если сообщение было переслано от пользователя
+            user_id = None
+            if post.html_text:
+                match_id = re.search(r'tg://user\?id=(\d+)', post.html_text)
+                if match_id:
+                    user_id = match_id.group(1)
 
-            cp = CryptoPay("417594:AAei8HxkjFN6D6GWKeB9f46mK6Q3dghVDAH", MAINNET)
+            # user_profile_link для отображения
+            user_profile_link = (
+                f'<a href="tg://user?id={user_id}">{displayed_nick}</a>'
+                if user_id else displayed_nick
+            )
 
+            
+
+            # Пример: множители
             if comment in ['орел', 'решка']:
                 multiplier = 1.8
             elif comment in ['больше', 'меньше']:
@@ -439,23 +432,44 @@ async def check_payments(post: types.Message):
 
             win_amount = round(amount * multiplier, 2)
 
+
+            # Ставка принята — отправка в чат
+            await post.reply(
+                text=f"""<b>💸 Ставка успешно принята!</b>
+
+<blockquote>| Игрок: {user_profile_link}</blockquote>
+
+<blockquote>| Сумма ставки: {amount}$</blockquote>
+
+<blockquote>| Исход ставки: {comment}</blockquote>
+""",
+                parse_mode='HTML'
+            )
             cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
             connect.commit()
+            await bot.send_message(
+                chat_id=int(-1002744283282),  
+                text=f"""<b>💸 Ставка успешно принята!</b>
 
-            # Логируем, что ставка принята
-            logging.info(f"Ставка принята от пользователя: {user_profile_link}, сумма: {amount}, комментарий: {comment}")
-
-            # Отправляем сообщение об успешной ставке
-            await bot.send_message(chat_id=int(-1002744283282), text=f"""<b>💸 Ставка успешно принята!</b>
 <blockquote>| Игрок: {user_profile_link}</blockquote>
+
 <blockquote>| Сумма ставки: {amount}$</blockquote>
+
 <blockquote>| Исход ставки: {comment}</blockquote>
-""", parse_mode='html')
+""",
+                parse_mode='HTML'
+            )
 
+            # Игра
             if playing == 1:
-                check = await cp.create_check(amount=win_amount, asset="USDT", pin_to_user_id=int(user_id))
-
                 cursor.execute("UPDATE users SET wins = wins + 1 WHERE user_id = ?", (user_id,))
+                connect.commit()    
+                if user_id:
+                    check = await cp.create_check(
+                        amount=win_amount,
+                        asset="USDT",
+                        pin_to_user_id=int(user_id)
+                    )
 
                 await bot.send_photo(
                     chat_id=int(-1002744283282),
@@ -468,25 +482,25 @@ async def check_payments(post: types.Message):
 
 <i>Поздравляем вас, желаем удачи в следующих успешных ставках</i>
 """,
-                    parse_mode="HTML",
-                    reply_markup=play_markup
-                )
-
-                builder = InlineKeyboardBuilder()
-                builder.button(text="💸 Забрать приз", url=check.bot_check_url)
-                reply_markup = builder.as_markup()
-
-                await bot.send_photo(
-                    chat_id=user_id,
-                    photo=PHOTO_WIN_URL,
-                    caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
-<i>⚡ Ваш выигрыш ниже:</i>""",
-                    reply_markup=reply_markup,
                     parse_mode="HTML"
                 )
+
+                if user_id:
+                    builder = InlineKeyboardBuilder()
+                    builder.button(text="💸 Забрать приз", url=check.bot_check_url)
+                    reply_markup2 = builder.as_markup()
+
+                    await bot.send_photo(
+                        chat_id=int(user_id),
+                        photo=PHOTO_WIN_URL,
+                        caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
+<i>⚡ Ваш выигрыш ниже:</i>""",
+                        reply_markup=reply_markup2,
+                        parse_mode="HTML"
+                    )
             else:
                 cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
-
+                connect.commit()
                 await bot.send_photo(
                     chat_id=int(-1002744283282),
                     photo=PHOTO_LOSE_URL,
@@ -498,8 +512,7 @@ async def check_payments(post: types.Message):
 
 <i>Вперёд, к новым вершинам! Ваша победа уже близка! 💥</i>
 """,
-                    parse_mode="HTML",
-                    reply_markup=play_markup
+                    parse_mode="HTML"
                 )
 
         except Exception as e:
