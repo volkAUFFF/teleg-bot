@@ -321,7 +321,7 @@ async def show_profile(message: types.Message):
 
 
     money = InlineKeyboardBuilder()
-    money.button(text="💸 Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
+    money.button(text="💸 Сделать ставку", url="https://t.me/send?start=IVKbDwUV05ou")
     money.adjust(1)
 
     if row:
@@ -501,6 +501,8 @@ async def check_payments(post: types.Message):
             else:
                 cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
                 connect.commit()
+                playying = InlineKeyboardBuilder()
+                playying.button(text='🕹️ Сделать ставку', url='https://t.me/send?start=IVKbDwUV05ou'
                 await bot.send_photo(
                     chat_id=int(-1002744283282),
                     photo=PHOTO_LOSE_URL,
