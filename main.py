@@ -321,7 +321,7 @@ async def show_profile(message: types.Message):
 
 
     money = InlineKeyboardBuilder()
-    money.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVKbDwUV05ou")
+    money.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
     money.adjust(1)
 
     if row:
@@ -502,7 +502,7 @@ async def check_payments(post: types.Message):
                 cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
                 connect.commit()
                 playying = InlineKeyboardBuilder()
-                playying.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVKbDwUV05ou")
+                playying.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
                 
                 await bot.send_photo(
                     chat_id=int(-1002744283282),
@@ -591,6 +591,7 @@ async def support_continue(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(SupportStates.waiting_for_message)
     await callback.message.answer(
     f"""<b>⚡ Вы продолжили диалог</b>
+    
 <i>Расскажите, с чем вы столкнулись — мы поможем. Опишите суть вопроса или проблемы, избегая мета вопросов. Четко опишите вашу проблему — что случилось. Не спамьте, и не дублируйте проблему по несколько раз.
 После этого мы свяжемся с вами как можно скорее. Спасибо!</i>""",
     parse_mode="HTML"
