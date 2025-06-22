@@ -221,7 +221,7 @@ async def start_cmd(message: types.Message, state: FSMContext = None):
             await message.answer(
                 f"<b>👋 {fullname}, чтобы пользоваться ботом, сначала подпишитесь на наш канал: @LunaBetChannel\n</b>"
                 f"После этого снова введите /start.",
-                parse_mode='HTML'
+                parse_mode='HTML', disable_web_page_preview=True
             )
             return
         
@@ -321,7 +321,7 @@ async def show_profile(message: types.Message):
 
 
     money = InlineKeyboardBuilder()
-    money.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
+    money.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVKbDwUV05ou")
     money.adjust(1)
 
     if row:
@@ -463,7 +463,9 @@ async def check_payments(post: types.Message):
                 text=f"""<b>💸 Ставка успешно принята!</b>
 
 <blockquote>| Игрок: {user_profile_link}</blockquote>
+
 <blockquote>| Сумма ставки: {amount}$</blockquote>
+
 <blockquote>| Исход ставки: {comment}</blockquote>
 """,
                 parse_mode='HTML'
@@ -495,22 +497,23 @@ async def check_payments(post: types.Message):
                 )
 
                 if user_id:
-                    builder = InlineKeyboardMarkup()
-                    builder.add(InlineKeyboardButton("💸 Забрать приз", url=check.bot_check_url))
+                    builder = InlineKeyboardBuilder()
+                    builder.add(text="💸 Забрать приз", url=check.bot_check_url))
+                    reply_builder = builder.as_markup()
 
                     await bot.send_photo(
                         chat_id=int(user_id),
                         photo=PHOTO_WIN_URL,
                         caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
 <i>⚡ Ваш выигрыш ниже:</i>""",
-                        reply_markup=builder,
+                        reply_markup=reply_builder,
                         parse_mode="HTML"
                     )
             else:
                 cursor.execute("UPDATE users SET loses = loses + 1 WHERE user_id = ?", (user_id,))
                 connect.commit()
                 playying = InlineKeyboardBuilder()
-                playying.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
+                playying.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVKbDwUV05ou")
                 await bot.send_photo(
                     chat_id=-1002744283282,
                     photo=PHOTO_LOSE_URL,
@@ -540,7 +543,7 @@ cp = CryptoPay("417594:AAei8HxkjFN6D6GWKeB9f46mK6Q3dghVDAH", MAINNET)
 @dp.message(Command("чеки"))
 async def list_checks(message: types.Message):
     try:
-        checks = await cp.get_checks(count=100)  # получаем 10 последних чеков
+        checks = await cp.get_checks(count=100)  
 
         if not checks:
             await message.answer("❌ Чеки не найдены.")
