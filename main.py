@@ -373,6 +373,17 @@ async def main_hand(message: types.Message):
 
 
 
+from aiogram.enums import ChatMemberStatus
+
+
+# ID канала, на который проверяем подписку
+CHANNEL_ID = -1002644395732  # например, канал с логами
+
+import logging
+import random
+import re
+from aiogram import types
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Константы
 PHOTO_WIN_URL = 'https://i.postimg.cc/0N7Ld6Rf/image.jpg'
@@ -448,13 +459,11 @@ async def check_payments(post: types.Message):
             cursor.execute("UPDATE users SET plays = plays + 1 WHERE user_id = ?", (user_id,))
             connect.commit()
             await bot.send_message(
-                chat_id=int(-1002744283282),  
+                chat_id=-1002744283282,  # лог-канал
                 text=f"""<b>💸 Ставка успешно принята!</b>
 
 <blockquote>| Игрок: {user_profile_link}</blockquote>
-
 <blockquote>| Сумма ставки: {amount}$</blockquote>
-
 <blockquote>| Исход ставки: {comment}</blockquote>
 """,
                 parse_mode='HTML'
@@ -472,7 +481,7 @@ async def check_payments(post: types.Message):
                     )
 
                 await bot.send_photo(
-                    chat_id=int(-1002744283282),
+                    chat_id=-1002744283282,
                     photo=PHOTO_WIN_URL,
                     caption=f"""
 [⚡️] <b>Победа! Выпало значение «{playing}».</b>
@@ -486,16 +495,15 @@ async def check_payments(post: types.Message):
                 )
 
                 if user_id:
-                    builder = InlineKeyboardBuilder()
-                    builder.button(text="💸 Забрать приз", url=check.bot_check_url)
-                    reply_markup2 = builder.as_markup()
+                    builder = InlineKeyboardMarkup()
+                    builder.add(InlineKeyboardButton("💸 Забрать приз", url=check.bot_check_url))
 
                     await bot.send_photo(
                         chat_id=int(user_id),
                         photo=PHOTO_WIN_URL,
                         caption=f"""<b>[⚡️] Поздравляем вас, вы выиграли! 💥</b>
 <i>⚡ Ваш выигрыш ниже:</i>""",
-                        reply_markup=reply_markup2,
+                        reply_markup=builder,
                         parse_mode="HTML"
                     )
             else:
@@ -503,9 +511,8 @@ async def check_payments(post: types.Message):
                 connect.commit()
                 playying = InlineKeyboardBuilder()
                 playying.button(text="🕹️ Сделать ставку", url="https://t.me/send?start=IVrfxN9IrHq8")
-                
                 await bot.send_photo(
-                    chat_id=int(-1002744283282),
+                    chat_id=-1002744283282,
                     photo=PHOTO_LOSE_URL,
                     caption=f"""
 <b>⚡️ Проигрыш — это не конец, а начало нового шанса. Вам выпало значение «{playing}»</b>
@@ -515,7 +522,7 @@ async def check_payments(post: types.Message):
 
 <i>Вперёд, к новым вершинам! Ваша победа уже близка! 💥</i>
 """,
-                    parse_mode="HTML"
+                    parse_mode="HTML", reply_markup=playying.as_markup()
                 )
 
         except Exception as e:
