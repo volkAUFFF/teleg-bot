@@ -498,7 +498,7 @@ async def check_payments(post: types.Message):
 
                 if user_id:
                     builder = InlineKeyboardBuilder()
-                    builder.add(text="💸 Забрать приз", url=check.bot_check_url)
+                    builder.button(text="💸 Забрать приз", url=check.bot_check_url)
                     reply_builder = builder.as_markup()
 
                     await bot.send_photo(
